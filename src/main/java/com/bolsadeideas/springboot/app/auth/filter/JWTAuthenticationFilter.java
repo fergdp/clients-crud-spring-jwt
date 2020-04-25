@@ -28,6 +28,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.bolsadeideas.springboot.app.auth.service.JWTServiceImpl.HEADER_STRING;
+import static com.bolsadeideas.springboot.app.auth.service.JWTServiceImpl.TOKEN_PREFIX;
+
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private AuthenticationManager authenticationManager;
@@ -75,7 +78,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         String token = jwtService.create(authResult);
 
-        response.addHeader("Authorization", "Bearer " + token);
+        response.addHeader(HEADER_STRING, TOKEN_PREFIX + token);
 
         Map<String, Object> body = new HashMap<String, Object>();
         body.put("token", token);
