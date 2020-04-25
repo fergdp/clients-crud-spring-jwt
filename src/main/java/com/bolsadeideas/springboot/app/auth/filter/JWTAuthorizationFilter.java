@@ -37,8 +37,8 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
         Claims token = null;
         try {
             token = Jwts.parser()
-                    .setSigningKey("Alguna.Clave.Secreta.123456".getBytes())
-                    .parseClaimsJws(header.replace("Barer ", "")).getBody();
+                    .setSigningKey("aglunaclavesecretaasdfasdfasdfasdfasdfquefuncione2332".getBytes())
+                    .parseClaimsJws(header.replace("Bearer ", "")).getBody();
             validoToken = true;
         } catch (JwtException | IllegalArgumentException e) {
             validoToken = false;
@@ -50,7 +50,9 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
             String userName = token.getSubject();
             Object roles = token.get("authorities");
 
-            Collection<? extends GrantedAuthority> authorities = Arrays.asList(new ObjectMapper().readValue(roles.toString(), SimpleGrantedAuthority[].class));
+            Collection<? extends GrantedAuthority> authorities = Arrays.asList(new ObjectMapper()
+                    .addMixIn(SimpleGrantedAuthority.class, SimpleGrantedAuthoritiesMixin.class)
+                    .readValue(roles.toString(), SimpleGrantedAuthority[].class));
 
             usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userName, null, authorities);
         }
@@ -60,7 +62,7 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
     }
 
     private boolean requiresAuthentication(String header) {
-        if (header == null || !header.startsWith("Barer ")) {
+        if (header == null || !header.startsWith("Bearer ")) {
             return false;
         }
         return true;

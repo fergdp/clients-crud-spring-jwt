@@ -77,7 +77,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         claims.put("authorities", new ObjectMapper().writeValueAsString(roles));
 
         //SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
-        SecretKey secretKey = Keys.hmacShaKeyFor("Alguna.Clave.Secreta.123456".getBytes());
+        SecretKey secretKey = Keys.hmacShaKeyFor("aglunaclavesecretaasdfasdfasdfasdfasdfquefuncione2332".getBytes());
 
 
         String token = Jwts.builder()
