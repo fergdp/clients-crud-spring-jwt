@@ -1,5 +1,6 @@
 package com.bolsadeideas.springboot.app.auth.filter;
 
+import com.bolsadeideas.springboot.app.auth.service.JWTService;
 import com.bolsadeideas.springboot.app.models.entity.Usuario;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
@@ -30,9 +31,11 @@ import java.util.Map;
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private AuthenticationManager authenticationManager;
+    private JWTService jwtService;
 
-    public JWTAuthenticationFilter(AuthenticationManager authenticationManager) {
+    public JWTAuthenticationFilter(AuthenticationManager authenticationManager, JWTService jwtService) {
         this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
         setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/api/login", "POST"));
     }
 
@@ -42,7 +45,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String username = obtainUsername(request);
         String password = obtainPassword(request);
 
-        if(username != null && password != null) {
+        if (username != null && password != null) {
             logger.info("Username desde request parameter (form-adata): " + username);
             logger.info("Password desde request parameter (form-adata): " + password);
         } else {
@@ -69,31 +72,15 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
                                             Authentication authResult) throws IOException, ServletException {
-        String userName  = ((User)authResult.getPrincipal()).getUsername();
 
-        Collection<? extends GrantedAuthority> roles = authResult.getAuthorities();
-
-        Claims claims = Jwts.claims();
-        claims.put("authorities", new ObjectMapper().writeValueAsString(roles));
-
-        //SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
-        SecretKey secretKey = Keys.hmacShaKeyFor("aglunaclavesecretaasdfasdfasdfasdfasdfquefuncione2332".getBytes());
-
-
-        String token = Jwts.builder()
-                .setClaims(claims)
-                .setSubject(userName)
-                .signWith(secretKey)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() * 14000000L))
-                .compact();
+        String token = jwtService.create(authResult);
 
         response.addHeader("Authorization", "Bearer " + token);
 
-        Map<String, Object> body =  new HashMap<String, Object>();
+        Map<String, Object> body = new HashMap<String, Object>();
         body.put("token", token);
-        body.put("user", (User)authResult.getPrincipal());
-        body.put("mensaje", String.format("Hola %s, Has iniciado sesión con éxito", userName));
+        body.put("user", (User) authResult.getPrincipal());
+        body.put("mensaje", String.format("Hola %s, Has iniciado sesión con éxito", authResult.getName()));
 
         response.getWriter().write(new ObjectMapper().writeValueAsString(body));
         response.setStatus(200);
@@ -102,7 +89,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
-        Map<String, Object> body =  new HashMap<String, Object>();
+        Map<String, Object> body = new HashMap<String, Object>();
         body.put("mensaje", "Error de autenticacion: username o password incorrecto");
         body.put("error", failed.getMessage());
 
