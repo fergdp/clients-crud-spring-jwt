@@ -1,5 +1,8 @@
 package com.bolsadeideas.springboot.app.auth.filter;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
@@ -22,6 +25,22 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
             chain.doFilter(request, response);
             return;
         }
+
+        boolean validoToken;
+        Claims token = null;
+        try {
+            token = Jwts.parser()
+                    .setSigningKey("Alguna.Clave.Secreta.123456".getBytes())
+                    .parseClaimsJws(header.replace("Barer ", "")).getBody();
+            validoToken = true;
+        } catch (JwtException | IllegalArgumentException e) {
+            validoToken = false;
+        }
+
+        if (validoToken) {
+
+        }
+
     }
 
     private boolean requiresAuthentication(String header) {
