@@ -51,7 +51,7 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
             Object roles = token.get("authorities");
 
             Collection<? extends GrantedAuthority> authorities = Arrays.asList(new ObjectMapper()
-                    .addMixIn(SimpleGrantedAuthority.class, SimpleGrantedAuthoritiesMixin.class)
+                    .addMixIn(SimpleGrantedAuthority.class, SimpleGrantedAuthorityMixin.class)
                     .readValue(roles.toString(), SimpleGrantedAuthority[].class));
 
             usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userName, null, authorities);
